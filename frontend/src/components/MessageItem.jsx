@@ -7,7 +7,7 @@ export default function MessageItem({ message, isStreamingTarget }) {
   return (
     <div className={`message-item ${isUser ? 'user' : 'assistant'}`}>
       <div className="message-role">{isUser ? 'You' : 'Assistant'}</div>
-      <div className={`message-bubble ${isStreamingTarget ? 'streaming' : ''}`}>
+      <div className="message-bubble">
         {isUser ? (
           <span>{message.content}</span>
         ) : (

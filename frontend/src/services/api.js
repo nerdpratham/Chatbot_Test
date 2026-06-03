@@ -26,19 +26,22 @@ export async function sendMessageStream({ sessionId, content }, onChunk) {
 
     buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
-    buffer = lines.pop() // incomplete line stays in buffer
+    buffer = lines.pop()
 
     for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const payload = line.slice(6).trim()
-        if (payload === '[DONE]') return
-        try {
-          const { delta } = JSON.parse(payload)
-          if (delta) onChunk(delta)
-        } catch {
-          // malformed event — skip
-        }
+      if (!line.startsWith('data: ')) continue
+      const payload = line.slice(6).trim()
+      if (payload === '[DONE]') return
+
+      let parsed
+      try {
+        parsed = JSON.parse(payload)
+      } catch {
+        continue // malformed SSE event — skip
       }
+
+      if (parsed.error) throw new Error(parsed.error)
+      if (parsed.delta) onChunk(parsed.delta)
     }
   }
 }

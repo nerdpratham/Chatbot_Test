@@ -1,11 +1,10 @@
 import { useRef, useEffect } from 'react'
 import MessageList from './MessageList'
 import ChatInput from './ChatInput'
-import { useChat } from '../hooks/useChat'
+import Navbar from './Navbar'
 import './ChatWindow.css'
 
-export default function ChatWindow() {
-  const { messages, isStreaming, error, sendMessage, clearHistory } = useChat()
+export default function ChatWindow({ messages, isStreaming, error, sendMessage, clearHistory }) {
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -14,12 +13,12 @@ export default function ChatWindow() {
 
   return (
     <div className="chat-window">
-      <header className="chat-header">
-        <span className="chat-title">AI Assistant</span>
-        <button className="clear-btn" onClick={clearHistory} title="Clear conversation">
-          Clear
+      <Navbar />
+      <div className="chat-subheader">
+        <button className="new-chat-btn" onClick={clearHistory}>
+          + New chat
         </button>
-      </header>
+      </div>
 
       <div className="chat-body">
         <MessageList messages={messages} isStreaming={isStreaming} />
@@ -27,7 +26,9 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </div>
 
-      <ChatInput onSend={sendMessage} disabled={isStreaming} />
+      <div className="chat-input-wrap">
+        <ChatInput onSend={sendMessage} disabled={isStreaming} />
+      </div>
     </div>
   )
 }
