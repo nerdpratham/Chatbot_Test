@@ -1,0 +1,41 @@
+[
+  {
+    "id": "dlf-park-place-54",
+    "project": "DLF Park Place",
+    "city": "Gurgaon",
+    "locality": "Sector 54",
+    "bhk": 3,
+    "price": 22000000,
+    "areaSqft": 1750,
+    "distanceToMetroM": 400,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "GGM/123/2020"
+  },
+  {
+    "id": "m3m-merlin-67",
+    "project": "M3M Merlin",
+    "city": "Gurgaon",
+    "locality": "Sector 67",
+    "bhk": 2,
+    "price": 13500000,
+    "areaSqft": 1340,
+    "distanceToMetroM": 1800,
+    "status": "under-construction",
+    "possession": "Jun 2026",
+    "rera": "GGM/456/2021"
+  },
+  {
+    "id": "sobha-city-108",
+    "project": "Sobha City",
+    "city": "Gurgaon",
+    "locality": "Sector 108",
+    "bhk": 3,
+    "price": 16500000,
+    "areaSqft": 1610,
+    "distanceToMetroM": 3200,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "GGM/789/2019"
+  }
+]

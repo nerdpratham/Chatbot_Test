@@ -1,10 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 
-const provider = process.env.LLM_PROVIDER ?? 'anthropic'
-const model = process.env.LLM_MODEL ?? 'claude-sonnet-4-6'
-const systemPrompt = process.env.SYSTEM_PROMPT ?? 'You are a helpful assistant.'
+// Read at call-time so .env changes take effect on restart without code edits
+// Active model: gemini-2.5-flash-lite
+const getProvider = () => process.env.LLM_PROVIDER ?? 'anthropic'
+const getModel = () => process.env.LLM_MODEL ?? 'claude-sonnet-4-6'
+const getSystemPrompt = () => process.env.SYSTEM_PROMPT ?? 'You are a helpful assistant.'
 
 // Lazy singletons — only the active provider's client is created
 let anthropicClient
@@ -27,7 +29,7 @@ function getOpenAIClient() {
 
 function getGeminiClient() {
   if (!geminiClient) {
-    geminiClient = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    geminiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
   }
   return geminiClient
 }
@@ -36,26 +38,46 @@ function getGeminiClient() {
  * Streams an LLM response for the given message history.
  * Calls `onDelta` with each text chunk as it arrives.
  *
- * Set LLM_PROVIDER in .env to: "anthropic" | "openai" | "gemini"
+ * @param {Array}  messages       - [{ role, content }]
+ * @param {Function} onDelta      - called with each text chunk
+ * @param {string} [systemOverride] - overrides the env system prompt for this call
  */
-export async function streamLLMResponse(messages, onDelta) {
+export async function streamLLMResponse(messages, onDelta, systemOverride) {
+  const provider = getProvider()
+  const system = systemOverride ?? getSystemPrompt()
   switch (provider) {
-    case 'anthropic': return streamAnthropic(messages, onDelta)
-    case 'openai':    return streamOpenAI(messages, onDelta)
-    case 'gemini':    return streamGemini(messages, onDelta)
+    case 'anthropic': return streamAnthropic(messages, onDelta, system)
+    case 'openai':    return streamOpenAI(messages, onDelta, system)
+    case 'gemini':    return streamGemini(messages, onDelta, system)
     default:
       throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", or "gemini".`)
   }
 }
 
-async function streamAnthropic(messages, onDelta) {
+/**
+ * Non-streaming completion that returns the full response as a string.
+ * Used for internal tasks like requirement extraction.
+ */
+export async function generateText(messages, systemOverride) {
+  const provider = getProvider()
+  const system = systemOverride ?? getSystemPrompt()
+  switch (provider) {
+    case 'anthropic': return completeAnthropic(messages, system)
+    case 'openai':    return completeOpenAI(messages, system)
+    case 'gemini':    return completeGemini(messages, system)
+    default:
+      throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", or "gemini".`)
+  }
+}
+
+// ── Anthropic ────────────────────────────────────────────────────────────────
+async function streamAnthropic(messages, onDelta, system) {
   const stream = await getAnthropicClient().messages.stream({
-    model,
+    model: getModel(),
     max_tokens: 4096,
-    system: systemPrompt,
+    system,
     messages,
   })
-
   for await (const event of stream) {
     if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
       onDelta(event.delta.text)
@@ -63,37 +85,62 @@ async function streamAnthropic(messages, onDelta) {
   }
 }
 
-async function streamOpenAI(messages, onDelta) {
+async function completeAnthropic(messages, system) {
+  const resp = await getAnthropicClient().messages.create({
+    model: getModel(),
+    max_tokens: 1024,
+    system,
+    messages,
+  })
+  return resp.content.map(b => (b.type === 'text' ? b.text : '')).join('')
+}
+
+// ── OpenAI ───────────────────────────────────────────────────────────────────
+async function streamOpenAI(messages, onDelta, system) {
   const stream = await getOpenAIClient().chat.completions.create({
-    model: model || 'gpt-4o',
-    messages: [{ role: 'system', content: systemPrompt }, ...messages],
+    model: getModel() || 'gpt-4o',
+    messages: [{ role: 'system', content: system }, ...messages],
     stream: true,
   })
-
   for await (const chunk of stream) {
     const delta = chunk.choices[0]?.delta?.content
     if (delta) onDelta(delta)
   }
 }
 
-async function streamGemini(messages, onDelta) {
-  const genModel = getGeminiClient().getGenerativeModel({
-    model: model || 'gemini-1.5-flash',
-    systemInstruction: systemPrompt,
+async function completeOpenAI(messages, system) {
+  const resp = await getOpenAIClient().chat.completions.create({
+    model: getModel() || 'gpt-4o',
+    messages: [{ role: 'system', content: system }, ...messages],
   })
+  return resp.choices[0]?.message?.content ?? ''
+}
 
-  // Gemini uses role "model" instead of "assistant", and wraps content in parts
-  const history = messages.slice(0, -1).map(m => ({
+// ── Gemini ───────────────────────────────────────────────────────────────────
+function toGeminiContents(messages) {
+  return messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }))
-  const lastMessage = messages[messages.length - 1].content
+}
 
-  const chat = genModel.startChat({ history })
-  const result = await chat.sendMessageStream(lastMessage)
-
-  for await (const chunk of result.stream) {
-    const text = chunk.text()
+async function streamGemini(messages, onDelta, system) {
+  const stream = await getGeminiClient().models.generateContentStream({
+    model: getModel() || 'gemini-2.0-flash',
+    config: { systemInstruction: system },
+    contents: toGeminiContents(messages),
+  })
+  for await (const chunk of stream) {
+    const text = chunk.text
     if (text) onDelta(text)
   }
+}
+
+async function completeGemini(messages, system) {
+  const resp = await getGeminiClient().models.generateContent({
+    model: getModel() || 'gemini-2.0-flash',
+    config: { systemInstruction: system },
+    contents: toGeminiContents(messages),
+  })
+  return resp.text ?? ''
 }

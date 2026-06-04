@@ -1,10 +1,15 @@
 import { Router } from 'express'
 import { getSession, appendToSession, deleteSession } from '../services/conversation.js'
 import { streamLLMResponse } from '../services/llm.js'
+import { extractRequirements, findMissingFields, buildFollowUp } from '../services/requirements.js'
+import { searchProperties } from '../services/propertyStore.js'
+import { buildGroundedSystemPrompt } from '../services/realEstateAgent.js'
 
 const router = Router()
 
-// POST /api/chat/stream — streaming chat endpoint (SSE)
+const sse = (res, obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`)
+
+// POST /api/chat/stream — RAG real-estate chat endpoint (SSE)
 router.post('/stream', async (req, res, next) => {
   try {
     const { sessionId, content } = req.body
@@ -12,8 +17,8 @@ router.post('/stream', async (req, res, next) => {
       return res.status(400).json({ error: 'sessionId and content are required' })
     }
 
-    const history = getSession(sessionId)
     appendToSession(sessionId, { role: 'user', content: content.trim() })
+    const history = getSession(sessionId)
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
@@ -21,27 +26,36 @@ router.post('/stream', async (req, res, next) => {
     res.flushHeaders()
 
     let fullResponse = ''
+    const write = (text) => { fullResponse += text; sse(res, { delta: text }) }
 
     try {
-      await streamLLMResponse(
-        [...history, { role: 'user', content: content.trim() }],
-        (delta) => {
-          fullResponse += delta
-          res.write(`data: ${JSON.stringify({ delta })}\n\n`)
-        },
-      )
+      // 1. Understand the requirement from the whole conversation.
+      const requirements = await extractRequirements(history)
+
+      // 2. Gate: enough info to search? If not, ask a follow-up and stop.
+      const missing = findMissingFields(requirements)
+      if (missing.length > 0) {
+        write(buildFollowUp(missing))
+      } else {
+        // 3. Retrieve matching properties from the data folder.
+        const matches = searchProperties(requirements)
+
+        // 4. Ground the LLM on the matched properties and stream the answer.
+        const systemPrompt = buildGroundedSystemPrompt(requirements, matches)
+        await streamLLMResponse(history, write, systemPrompt)
+      }
 
       appendToSession(sessionId, { role: 'assistant', content: fullResponse })
       res.write('data: [DONE]\n\n')
       res.end()
     } catch (err) {
-      // Headers already flushed — send error as SSE event
-      console.error('LLM error:', err.message)
-      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+      // Headers already flushed — surface the error as an SSE event.
+      console.error('Chat pipeline error:', err.message)
+      sse(res, { error: err.message })
       res.end()
     }
   } catch (err) {
-    // Headers not yet sent — pass to Express error handler
+    // Headers not yet sent — pass to Express error handler.
     next(err)
   }
 })

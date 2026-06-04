@@ -1,0 +1,80 @@
+[
+  {
+    "id": "metro-residency-76",
+    "project": "Metro Residency",
+    "city": "Noida",
+    "locality": "Sector 76",
+    "bhk": 3,
+    "price": 10500000,
+    "areaSqft": 1320,
+    "distanceToMetroM": 500,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "UPRERAPRJ123456"
+  },
+  {
+    "id": "green-heights-150",
+    "project": "Green Heights",
+    "city": "Noida",
+    "locality": "Sector 150",
+    "bhk": 3,
+    "price": 11500000,
+    "areaSqft": 1450,
+    "distanceToMetroM": 1200,
+    "status": "under-construction",
+    "possession": "Dec 2027",
+    "rera": "UPRERAPRJ654321"
+  },
+  {
+    "id": "skyline-towers-137",
+    "project": "Skyline Towers",
+    "city": "Noida",
+    "locality": "Sector 137",
+    "bhk": 3,
+    "price": 9800000,
+    "areaSqft": 1280,
+    "distanceToMetroM": 300,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "UPRERAPRJ112233"
+  },
+  {
+    "id": "lotus-boulevard-100",
+    "project": "Lotus Boulevard",
+    "city": "Noida",
+    "locality": "Sector 100",
+    "bhk": 2,
+    "price": 8500000,
+    "areaSqft": 1150,
+    "distanceToMetroM": 800,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "UPRERAPRJ778899"
+  },
+  {
+    "id": "emerald-court-93a",
+    "project": "Emerald Court",
+    "city": "Noida",
+    "locality": "Sector 93A",
+    "bhk": 4,
+    "price": 18500000,
+    "areaSqft": 2100,
+    "distanceToMetroM": 2500,
+    "status": "ready-to-move",
+    "possession": null,
+    "rera": "UPRERAPRJ445566"
+  },
+  {
+    "id": "antriksh-golf-150",
+    "project": "Antriksh Golf View",
+    "city": "Noida",
+    "locality": "Sector 150",
+    "bhk": 3,
+    "price": 12000000,
+    "areaSqft": 1500,
+    "distanceToMetroM": 1400,
+    "status": "under-construction",
+    "possession": "Mar 2027",
+    "rera": "UPRERAPRJ990011"
+  }
+]
