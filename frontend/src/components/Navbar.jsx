@@ -1,6 +1,6 @@
 import './Navbar.css'
 
-export default function Navbar() {
+export default function Navbar({ onNewChat }) {
   return (
     <nav className="navbar">
       <span className="navbar-brand">SixdX Chatbot</span>
@@ -12,8 +12,11 @@ export default function Navbar() {
       </div>
 
       <div className="navbar-actions">
-        <button className="btn-login">Log in</button>
-        <button className="btn-signup">Sign up</button>
+        {onNewChat && (
+          <button className="new-chat-btn" onClick={onNewChat}>
+            + New chat
+          </button>
+        )}
       </div>
     </nav>
   )

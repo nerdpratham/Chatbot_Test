@@ -13,12 +13,7 @@ export default function ChatWindow({ messages, isStreaming, error, sendMessage, 
 
   return (
     <div className="chat-window">
-      <Navbar />
-      <div className="chat-subheader">
-        <button className="new-chat-btn" onClick={clearHistory}>
-          + New chat
-        </button>
-      </div>
+      <Navbar onNewChat={clearHistory} />
 
       <div className="chat-body">
         <MessageList messages={messages} isStreaming={isStreaming} />

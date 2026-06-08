@@ -8,33 +8,6 @@
   padding-top: 60px; /* navbar height */
 }
 
-.chat-subheader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0.6rem 1.25rem;
-  border-bottom: 1px solid var(--card-border);
-  background: rgba(255,255,255,0.4);
-}
-
-.new-chat-btn {
-  background: var(--pill-bg);
-  border: 1px solid var(--pill-border);
-  border-radius: var(--radius-pill);
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-family: inherit;
-  padding: 0.35rem 0.9rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.new-chat-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-light);
-}
-
 .chat-body {
   flex: 1;
   overflow-y: auto;

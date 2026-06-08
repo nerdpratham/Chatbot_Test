@@ -47,13 +47,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 96px; /* reserve space so brand/links stay put on the landing page */
+  justify-content: flex-end;
 }
 
-.btn-login {
-  background: transparent;
+.new-chat-btn {
+  background: var(--pill-bg);
   border: 1px solid var(--pill-border);
   border-radius: var(--radius-pill);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-family: inherit;
   font-weight: 500;
@@ -62,28 +64,10 @@
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
-.btn-login:hover {
+.new-chat-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-light);
-}
-
-.btn-signup {
-  background: var(--accent);
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  color: white;
-  font-size: 0.85rem;
-  font-family: inherit;
-  font-weight: 500;
-  padding: 0.4rem 1.1rem;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-}
-
-.btn-signup:hover {
-  background: var(--accent-hover);
-  transform: scale(1.03);
 }
 
 /* collapse links on small screens */
