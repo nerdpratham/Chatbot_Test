@@ -10,7 +10,9 @@
     "distanceToMetroM": 400,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "GGM/123/2020"
+    "rera": "GGM/123/2020",
+    "source": "99acres",
+    "lastChecked": "8 Jun 2026"
   },
   {
     "id": "m3m-merlin-67",
@@ -23,7 +25,9 @@
     "distanceToMetroM": 1800,
     "status": "under-construction",
     "possession": "Jun 2026",
-    "rera": "GGM/456/2021"
+    "rera": "GGM/456/2021",
+    "source": "MagicBricks",
+    "lastChecked": "6 Jun 2026"
   },
   {
     "id": "sobha-city-108",
@@ -36,6 +40,8 @@
     "distanceToMetroM": 3200,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "GGM/789/2019"
+    "rera": "GGM/789/2019",
+    "source": "Housing.com",
+    "lastChecked": "7 Jun 2026"
   }
 ]

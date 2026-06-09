@@ -2,9 +2,11 @@ const BASE_URL = '/api'
 
 /**
  * Sends a message and streams the assistant reply via SSE.
- * Calls `onChunk` for each text delta received.
+ * @param {object} handlers
+ * @param {(chunk: string) => void} handlers.onChunk      - called per text delta
+ * @param {(properties: object[]) => void} [handlers.onProperties] - matched property cards
  */
-export async function sendMessageStream({ sessionId, content }, onChunk) {
+export async function sendMessageStream({ sessionId, content }, { onChunk, onProperties }) {
   const res = await fetch(`${BASE_URL}/chat/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -41,6 +43,7 @@ export async function sendMessageStream({ sessionId, content }, onChunk) {
       }
 
       if (parsed.error) throw new Error(parsed.error)
+      if (parsed.properties) onProperties?.(parsed.properties)
       if (parsed.delta) onChunk(parsed.delta)
     }
   }

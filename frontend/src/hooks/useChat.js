@@ -24,22 +24,25 @@ export function useChat() {
     const userMsg = { id: crypto.randomUUID(), role: 'user', content }
     setMessages(prev => [...prev, userMsg])
 
-    const assistantMsg = { id: crypto.randomUUID(), role: 'assistant', content: '' }
+    const assistantMsg = { id: crypto.randomUUID(), role: 'assistant', content: '', properties: [] }
     setMessages(prev => [...prev, assistantMsg])
     setIsStreaming(true)
+
+    const updateLast = (patch) => {
+      setMessages(prev => {
+        const updated = [...prev]
+        const last = updated[updated.length - 1]
+        updated[updated.length - 1] = { ...last, ...patch(last) }
+        return updated
+      })
+    }
 
     try {
       await sendMessageStream(
         { sessionId: sessionId.current, content },
-        (chunk) => {
-          setMessages(prev => {
-            const updated = [...prev]
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              content: updated[updated.length - 1].content + chunk,
-            }
-            return updated
-          })
+        {
+          onChunk: (chunk) => updateLast(last => ({ content: last.content + chunk })),
+          onProperties: (properties) => updateLast(() => ({ properties })),
         },
       )
     } catch (err) {

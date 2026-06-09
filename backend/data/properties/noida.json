@@ -10,7 +10,9 @@
     "distanceToMetroM": 500,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "UPRERAPRJ123456"
+    "rera": "UPRERAPRJ123456",
+    "source": "99acres",
+    "lastChecked": "8 Jun 2026"
   },
   {
     "id": "green-heights-150",
@@ -23,7 +25,9 @@
     "distanceToMetroM": 1200,
     "status": "under-construction",
     "possession": "Dec 2027",
-    "rera": "UPRERAPRJ654321"
+    "rera": "UPRERAPRJ654321",
+    "source": "MagicBricks",
+    "lastChecked": "6 Jun 2026"
   },
   {
     "id": "skyline-towers-137",
@@ -36,7 +40,9 @@
     "distanceToMetroM": 300,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "UPRERAPRJ112233"
+    "rera": "UPRERAPRJ112233",
+    "source": "Housing.com",
+    "lastChecked": "7 Jun 2026"
   },
   {
     "id": "lotus-boulevard-100",
@@ -49,7 +55,9 @@
     "distanceToMetroM": 800,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "UPRERAPRJ778899"
+    "rera": "UPRERAPRJ778899",
+    "source": "99acres",
+    "lastChecked": "5 Jun 2026"
   },
   {
     "id": "emerald-court-93a",
@@ -62,7 +70,9 @@
     "distanceToMetroM": 2500,
     "status": "ready-to-move",
     "possession": null,
-    "rera": "UPRERAPRJ445566"
+    "rera": "UPRERAPRJ445566",
+    "source": "MagicBricks",
+    "lastChecked": "8 Jun 2026"
   },
   {
     "id": "antriksh-golf-150",
@@ -75,6 +85,8 @@
     "distanceToMetroM": 1400,
     "status": "under-construction",
     "possession": "Mar 2027",
-    "rera": "UPRERAPRJ990011"
+    "rera": "UPRERAPRJ990011",
+    "source": "Housing.com",
+    "lastChecked": "4 Jun 2026"
   }
 ]

@@ -40,7 +40,12 @@ router.post('/stream', async (req, res, next) => {
         // 3. Retrieve matching properties from the data folder.
         const matches = searchProperties(requirements)
 
-        // 4. Ground the LLM on the matched properties and stream the answer.
+        // 3a. Send the structured matches so the UI can render them as cards.
+        if (matches.length > 0) {
+          sse(res, { properties: matches })
+        }
+
+        // 4. Ground the LLM on the matched properties and stream a short intro.
         const systemPrompt = buildGroundedSystemPrompt(requirements, matches)
         await streamLLMResponse(history, write, systemPrompt)
       }

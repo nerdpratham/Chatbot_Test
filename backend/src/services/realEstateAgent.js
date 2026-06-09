@@ -24,6 +24,8 @@ export function buildGroundedSystemPrompt(req, matches) {
     ? matches.map(formatProperty).join('\n')
     : '(none matched the criteria)'
 
+  const hasMatches = matches.length > 0
+
   return `You are a real estate assistant.
 
 User requirement:
@@ -32,9 +34,12 @@ ${requirement}.
 Available matching properties:
 ${propertyList}
 
+The matching properties are ALSO shown to the user as visual cards directly below your message, so you do not need to repeat each property's full details.
+
 Rules:
-- Answer ONLY from the available property data above.
-- Do not invent or assume price, location, area, availability, RERA, or possession date.
-- If no properties match, say no exact match was found and suggest relaxing filters (e.g. higher budget, a different sector, or allowing a greater distance from the metro).
-- Be concise. Present each option clearly with its key details.`
+- Answer ONLY from the available property data above. Never invent price, location, area, availability, RERA, or possession date.
+${hasMatches
+  ? `- Since the cards already list the details, reply with ONE short, friendly sentence introducing the ${matches.length} option${matches.length > 1 ? 's' : ''} (e.g. "Here are a few options that match your requirement:"). Do NOT list the individual properties in prose.`
+  : `- No properties matched. Tell the user no exact match was found and suggest relaxing filters (e.g. a higher budget, a different sector, or allowing a greater distance from the metro). Keep it to one or two sentences.`}
+- If the user asks a specific question about a listed property (e.g. which is cheapest), answer it directly from the data above.`
 }

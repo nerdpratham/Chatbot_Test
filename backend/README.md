@@ -73,11 +73,13 @@ findMissingFields(requirements)
   │                 stream the follow-up, stop here
   ▼
 searchProperties(requirements)        ← retrieval (pure JS filter over data/)
+  │
+  ├──► emit SSE event { properties: [...] }  (structured → rendered as CARDS)
   ▼
 buildGroundedSystemPrompt(req, matches)
   │     injects the matched properties + anti-hallucination rules
   ▼
-streamLLMResponse(history, …, system) ← LLM CALL 2 (streaming)
+streamLLMResponse(history, …, system) ← LLM CALL 2 (streaming, SHORT intro only)
   │
   ▼
 SSE deltas → React
@@ -113,10 +115,15 @@ Base path: `/api`
 The streaming endpoint writes lines of the form:
 
 ```
-data: {"delta":"text chunk"}      ← repeated for each chunk of the answer
+data: {"properties":[ … ]}        ← once, when matches exist — UI renders these as cards
+data: {"delta":"text chunk"}      ← repeated; the assistant's short conversational intro
 data: {"error":"message"}         ← only if something failed mid-stream
 data: [DONE]                       ← terminal marker
 ```
+
+The `properties` payload is the array of matched property objects (see schema below).
+The frontend shows the `delta` text as a chat bubble and the `properties` as cards
+beneath it — **conversation stays in chat, results render as cards.**
 
 The frontend reads these in [`frontend/src/services/api.js`](../frontend/src/services/api.js).
 
