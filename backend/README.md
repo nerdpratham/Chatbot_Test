@@ -19,7 +19,7 @@ the React frontend over Server-Sent Events (SSE).
 | Runtime | Node.js (ES Modules — `"type": "module"`) |
 | Web framework | Express 4 |
 | Dev runner | `node --watch` (auto-restarts on `.js` file changes) |
-| LLM providers | Anthropic, OpenAI, Google Gemini (`@google/genai`) — selectable via env |
+| LLM providers | Anthropic, OpenAI, Groq (OpenAI-compatible), Google Gemini (`@google/genai`) — selectable via env |
 | Streaming | Server-Sent Events (SSE) |
 | Config | `dotenv` (`.env`) |
 
@@ -138,6 +138,8 @@ The frontend reads these in [`frontend/src/services/api.js`](../frontend/src/ser
   Used for requirement extraction.
 - Provider is chosen at call time from `LLM_PROVIDER`; model from `LLM_MODEL`. Clients
   are lazily created singletons, so only the active provider's SDK is initialised.
+- **Groq** reuses the OpenAI SDK pointed at `https://api.groq.com/openai/v1`
+  (OpenAI-compatible), so no extra dependency is needed.
 
 ### `requirements.js` — understand + gate
 - `extractRequirements(history)` — LLM call returning the structured requirement JSON.

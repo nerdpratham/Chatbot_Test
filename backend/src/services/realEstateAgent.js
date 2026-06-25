@@ -39,7 +39,9 @@ The matching properties are ALSO shown to the user as visual cards directly belo
 Rules:
 - Answer ONLY from the available property data above. Never invent price, location, area, availability, RERA, or possession date.
 ${hasMatches
-  ? `- Since the cards already list the details, reply with ONE short, friendly sentence introducing the ${matches.length} option${matches.length > 1 ? 's' : ''} (e.g. "Here are a few options that match your requirement:"). Do NOT list the individual properties in prose.`
+  ? `- The cards already show every property's details, so your ENTIRE reply must be a SINGLE short sentence that introduces the ${matches.length} option${matches.length > 1 ? 's' : ''} and nothing else.
+- Do NOT mention any property name, price, sector, area, RERA, possession date, or bullet/numbered list. Those belong only on the cards.
+- Reply with exactly something like: "Here are a few options that match your requirement:" — then stop.`
   : `- No properties matched. Tell the user no exact match was found and suggest relaxing filters (e.g. a higher budget, a different sector, or allowing a greater distance from the metro). Keep it to one or two sentences.`}
 - If the user asks a specific question about a listed property (e.g. which is cheapest), answer it directly from the data above.`
 }

@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 import { GoogleGenAI } from '@google/genai'
 
 // Read at call-time so .env changes take effect on restart without code edits
-// Active model: gemini-2.5-flash-lite
+// Active provider: groq (llama-3.3-70b-versatile)
 const getProvider = () => process.env.LLM_PROVIDER ?? 'anthropic'
 const getModel = () => process.env.LLM_MODEL ?? 'claude-sonnet-4-6'
 const getSystemPrompt = () => process.env.SYSTEM_PROMPT ?? 'You are a helpful assistant.'
@@ -11,6 +11,7 @@ const getSystemPrompt = () => process.env.SYSTEM_PROMPT ?? 'You are a helpful as
 // Lazy singletons — only the active provider's client is created
 let anthropicClient
 let openaiClient
+let groqClient
 let geminiClient
 
 function getAnthropicClient() {
@@ -25,6 +26,17 @@ function getOpenAIClient() {
     openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   }
   return openaiClient
+}
+
+// Groq is OpenAI-compatible — reuse the OpenAI SDK with Groq's base URL.
+function getGroqClient() {
+  if (!groqClient) {
+    groqClient = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
+    })
+  }
+  return groqClient
 }
 
 function getGeminiClient() {
@@ -47,10 +59,11 @@ export async function streamLLMResponse(messages, onDelta, systemOverride) {
   const system = systemOverride ?? getSystemPrompt()
   switch (provider) {
     case 'anthropic': return streamAnthropic(messages, onDelta, system)
-    case 'openai':    return streamOpenAI(messages, onDelta, system)
+    case 'openai':    return streamOpenAICompatible(getOpenAIClient(), 'gpt-4o', messages, onDelta, system)
+    case 'groq':      return streamOpenAICompatible(getGroqClient(), 'llama-3.3-70b-versatile', messages, onDelta, system)
     case 'gemini':    return streamGemini(messages, onDelta, system)
     default:
-      throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", or "gemini".`)
+      throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", "groq", or "gemini".`)
   }
 }
 
@@ -63,10 +76,11 @@ export async function generateText(messages, systemOverride) {
   const system = systemOverride ?? getSystemPrompt()
   switch (provider) {
     case 'anthropic': return completeAnthropic(messages, system)
-    case 'openai':    return completeOpenAI(messages, system)
+    case 'openai':    return completeOpenAICompatible(getOpenAIClient(), 'gpt-4o', messages, system)
+    case 'groq':      return completeOpenAICompatible(getGroqClient(), 'llama-3.3-70b-versatile', messages, system)
     case 'gemini':    return completeGemini(messages, system)
     default:
-      throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", or "gemini".`)
+      throw new Error(`Unknown LLM_PROVIDER: "${provider}". Use "anthropic", "openai", "groq", or "gemini".`)
   }
 }
 
@@ -95,10 +109,10 @@ async function completeAnthropic(messages, system) {
   return resp.content.map(b => (b.type === 'text' ? b.text : '')).join('')
 }
 
-// ── OpenAI ───────────────────────────────────────────────────────────────────
-async function streamOpenAI(messages, onDelta, system) {
-  const stream = await getOpenAIClient().chat.completions.create({
-    model: getModel() || 'gpt-4o',
+// ── OpenAI-compatible (OpenAI + Groq) ────────────────────────────────────────
+async function streamOpenAICompatible(client, defaultModel, messages, onDelta, system) {
+  const stream = await client.chat.completions.create({
+    model: getModel() || defaultModel,
     messages: [{ role: 'system', content: system }, ...messages],
     stream: true,
   })
@@ -108,9 +122,9 @@ async function streamOpenAI(messages, onDelta, system) {
   }
 }
 
-async function completeOpenAI(messages, system) {
-  const resp = await getOpenAIClient().chat.completions.create({
-    model: getModel() || 'gpt-4o',
+async function completeOpenAICompatible(client, defaultModel, messages, system) {
+  const resp = await client.chat.completions.create({
+    model: getModel() || defaultModel,
     messages: [{ role: 'system', content: system }, ...messages],
   })
   return resp.choices[0]?.message?.content ?? ''
